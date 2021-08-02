@@ -1,0 +1,385 @@
+title: "hw6_Darshana_Daga"
+author: "Darshana"
+date: "5/19/2021"
+
+#### Question1(a)
+#### Setting up a random series
+```{r}
+#generating random series
+#library
+library(fpp2)
+set.seed(123456)
+wn <- ts(data.frame(rnorm(200)))
+
+autoplot(wn)
+
+#checking auto-correlation and partial auto-correlation
+Acf(wn)
+Pacf(wn)
+
+```
+
+
+There is no significant correlation among observations over time, as the acf 
+and pacf plots show all bars are within the correlation significance lines. 
+The data is just white noise and no patterns are observed as we have just
+randomly generated values.
+
+#### Question1(b)
+##### b.AR(1) with parameter, 1 = 0.6
+```{r}
+ywnb <- ts(data.frame(matrix(rep(0),200,1)))
+ywnb[1,1] <- wn[1]
+for (i in 2:200) {
+  ywnb[i,1] <- 0.6*ywnb[i-1,1] + wn[i] 
+}
+autoplot(ywnb)
+
+#checking auto-correlation and partial auto-correlation
+Acf(ywnb)
+Pacf(ywnb)
+
+```
+
+
+Auto-correlation can be noticed from lag 1 to 4 in the ACF, whereas with the PACF we can see that there is significant correlation with the residuals at lag 1,followed
+by non significant correlation showing an auto-regressive pattern. 
+
+#### Question1(c)
+##### c.AR(2) with parameters, 1 = 0.6 and 2 = 0.3
+```{r}
+ywnc <- ts(data.frame(matrix(rep(0),200,1)))
+ywnc[1,1] <- wn[1]
+ywnc[2,1] <- wn[2]
+for (i in 3:200) {
+  ywnc[i,1] <- 0.6*ywnc[i-1,1] + 
+     0.3*ywnc[i-2,1] + wn[i] 
+}
+autoplot(ywnc)
+
+#checking auto-correlation and partial auto-correlation
+Acf(ywnc)
+Pacf(ywnc)
+```
+
+
+Auto-correlation can be noticed from lag 1 to 14 in the ACF, whereas with the PACF we can see that there is significant correlation with the residuals at lag 1 and lag2,followed
+by non significant correlation showing an auto-regressive pattern. 
+The pacf has two bar above the significance line, which indicated its an AR2 
+model. With one bar close to 0.8 and the other is close to 0.25.
+
+#### Question1(d)
+##### d.AR(2) with parameters, 1 = 0.8 and 2 = – 0.3
+```{r}
+ywnd <- ts(data.frame(matrix(rep(0),200,1)))
+ywnd[1,1] <- wn[1]
+ywnd[2,1] <- wn[2]
+for (i in 3:200) {
+  ywnd[i,1] <- 0.8*ywnd[i-1,1] + 
+    - 0.3*ywnd[i-2,1] + wn[i] 
+}
+autoplot(ywnd)
+
+#checking auto-correlation and partial auto-correlation
+Acf(ywnd)
+Pacf(ywnd)
+```
+
+
+Auto-correlation can be noticed only in lag 1 and lag 2 in the ACF, whereas with the PACF we can see that there is significant correlation with the residuals at lag 1 and lag2,followed
+by non significant correlation showing an auto-regressive pattern.
+The pacf has two bar above the significance line, which indicated its an AR2 
+model. With PACF one bar close to 0.65 and the other is close to negative 0.3.
+
+#### Question1(e)
+##### e.MA(1) with parameter, 1 = 0.6
+```{r}
+ywne <- ts(data.frame(matrix(rep(0),200,1)))
+ywne[1,1] <- wn[1]
+for (i in 2:200) {
+  ywne[i,1] <- wn[i] + 0.6*wn[i-1] 
+}
+autoplot(ywne)
+#
+#  Check Acf and Pacf
+#
+Acf(ywne)
+Pacf(ywne)
+```
+
+
+The ACF plot show one bar above the significance line, which indicates
+this a MA(1) model with bar value at 0.5 level.
+For the PACF graph, there is a significance from lag 1 to 3, 
+alternating between positive and negative, showing moving average term, 
+the order of term is determined by the ACF function. 
+In the ACF graph, only first the lag is significant, and the rest are not, 
+showing poor auto-correlation.
+
+
+
+#### Question1(f)
+##### f.ARMA(1,1) with parameters, 1 = 0.5 and 1 = 0.4
+```{r}
+ywnf <- ts(data.frame(matrix(rep(0),200,1)))
+ywnf[1,1] <- wn[1]
+for (i in 2:200) {
+  ywnf[i,1] <- 0.5*ywnf[i-1,1] + 0.4*wn[i-1] + wn[i] 
+}
+autoplot(ywnf)
+#
+#  Check Acf and Pacf
+#
+Acf(ywnf)
+Pacf(ywnf)
+```
+
+Due to no differencing in the data observations, the acf and pacf plot are picking 
+more auto-correlation than just AR(1) & MA(1) models. As the trend is not
+tailing off. 
+The ACF has large bar at lag 1 and then reducing till lag 3 showing moving average
+term present in the data. And there
+
+#### Question1(g)
+##### g.ARIMA(1,1,1) with parameters, 1 = 0.5 and 1 = 0.4
+```{r}
+ywng <- ts(data.frame(matrix(rep(0),200,1)))
+ywng[1,1] <- wn[1]
+for (i in 2:200){
+  ywng[i,] <- ywng[i-1,] + ywnf[i,]
+}
+
+autoplot(ywng)
+Acf(ywng)
+Pacf(ywng)
+
+```
+
+All the lags for this model have high significant lags showing high autocorrelation, whereas the PACF graph is similar as previous and shows significant correlations from the lag 1 to lag 2, and then correlations that are not significant, and shows presence
+of an auto-regressive term in the data.
+
+#### Question1(h)
+#### h.ARIMA(1,1,1)(0,1,0)[4] with parameters, 1 = 0.5 and 1 = 0.4
+```{r}
+ywnh <- ts(ywng, frequency = 4)
+
+for (i in 5:200){
+  ywnh[i] <- ywng[i] + ywnh[i-4]
+}
+
+autoplot(ywnh)
+Acf(ywnh)
+Pacf(ywnh)
+
+```
+
+
+In this model all the ACF lags have high correlation showing high auto-correlation.
+And in the PACF there is only one bar that is significant, showing a high 
+auto-regressive term which can be due to the presence of seasonality. 
+
+#### Question2(a)
+#### reading in data and transforming it 
+```{r}
+data1 <- read.csv('hw6_USGDP.csv')
+gdpts <- ts(data1[,2], start = 1947, frequency = 4)
+autoplot(gdpts)
+
+Acf(gdpts)
+Pacf(gdpts)
+
+Box.test(gdpts, lag = 1)
+# Data is correlated in time due to low p-value, so null hypothesis is rejected
+Box.test(gdpts, lag = 12)
+lambda <- BoxCox.lambda(gdpts)
+lambda
+
+#transformed data
+gdptsT <- BoxCox(gdpts, BoxCox.lambda(gdpts))
+autoplot(gdptsT)
+
+Acf(gdptsT)
+Pacf(gdptsT)
+
+```
+
+#### Question2(b)
+#### Running auto ARIMA for model selection
+```{r}
+model2b <- auto.arima(gdptsT)
+sum2b <- summary(model2b)
+aic2b <- model2b$aic
+RMSE2b <- sum2b[2]
+#The AIC is 20.94
+# The RMSE is 0.2407
+```
+
+Auto-Arima model (3,1,1)(0,1,2)[4] is the preferred model outcome from Auto-Arima.
+
+#### Question2(c)
+#### Using diffrent p & q values and seeing ARIMA performance
+```{r}
+model2c1 <- arima(gdptsT, order = c(1,1,1), seasonal = list(order=c(0,1,2),period=4))
+summary(model2c1)
+
+model2c2 <- arima(gdptsT, order = c(2,1,2), seasonal = list(order=c(0,1,2),period=4))
+summary(model2c2)
+
+model2c3 <- arima(gdptsT, order = c(2,1,1), seasonal = list(order=c(0,1,2),period=4))
+summary(model2c3)
+
+```
+
+
+#### Question2d
+#### Checking residule from best ARIMA model
+```{r}
+checkresiduals(model2b) # there is no correlation 
+```
+As we can see from the plot, the residue looks like white noise,the ACF plot doesn't
+have any lags that are significantly correlated and teh residule distribution
+looks like a normal distribution. All this indicates that the model fits really 
+well and we just have white noise unexplained. 
+
+
+#### Question2(e)
+#### Forecasting 2 years GDP values
+```{r}
+forecast2e <- forecast(model2c3, h = 8)
+focast <- InvBoxCox(forecast2e$mean, BoxCox.lambda(gdpts))
+options("scipen"=100, "digits"=4)
+autoplot(gdpts, series = 'Original') + xlab('Quarter') + ylab('GDP') +
+  autolayer(focast, series = 'Forecast') +
+  scale_colour_manual(values=c('Original' = 'black', 'Forecast' = 'red'))
+```
+
+#### Question2(f)
+#### Running ETS model and comparing it to best ARIMA model
+```{r}
+model2f <- ets(gdpts)
+ets2f <- summary(model2f)
+accuracy(model2f)
+aic2f <- model2f$aic
+RMSE2f <- ets2f[2]
+
+focast2 <- forecast(model2f, h=8)
+
+autoplot(focast2) +
+  xlab("Quarter") +
+  ylab("GDP")
+
+modelfaa <- auto.arima(gdpts)
+sumfaa <- summary(modelfaa)
+aicfaa <- modelfaa$aic
+RMSEfaa <- sumfaa[2]
+
+options(scipen=999)
+tab2f<- matrix(c( RMSEfaa,  RMSE2f, aicfaa, aic2f), ncol=2, byrow=T)
+colnames(tab2f) = c("Auto Arima","ETS")
+rownames(tab2f) <- c("RMSE", "AIC")
+tab2f
+```
+
+As shown above that the RMSE for auto-arima is 17190 which is lesser than that from ets 
+model at 17998, we can conclude that the Auto-Arima model (3,1,1)(0,1,2)[4] is
+a better performing model among the two.
+
+#### Question3(a)
+##### a.Set up the data set for analysis.  If necessary, find a suitable Box-Cox transformation for the data set (see Hyndman, section 3.2).
+```{r}
+data2 <- read.csv('hw6_one_family_homes.csv')
+gdpts1 <- ts(data2[,2], start = 1963, frequency = 12)
+autoplot(gdpts1)
+
+Acf(gdpts1)
+Pacf(gdpts1)
+
+Box.test(gdpts1, lag = 1)
+# Data is correlated in time due to low p-value, so null hypothesis is rejected
+Box.test(gdpts1, lag = 12)
+lambda <- BoxCox.lambda(gdpts1)
+lambda
+
+```
+
+After setting up the data we can notice that the lambda is quite high 0.593
+so there is no need to transform the data in this case. We will use the 
+un-transformed data for all further analysis.
+
+#### Question3(b)
+##### b.	Fit a suitable ARIMA model using auto.arima().
+```{r}
+model3b <- auto.arima(gdpts1)
+sum3b <- summary(model3b)
+aic3b <- model3b$aic
+RMSE3b <- sum3b[2]
+#AIC is 7153 
+#RMSE is 43.8
+```
+
+ARIMA(2,1,3)(1,0,2)[12] is the preferred model from Auto-Arima in this case.
+
+#### Question3(c)
+```{r}
+model3c1 <- arima(gdpts1, order=c(2,1,1), seasonal = c(0,1,2))
+summary(model3c1)
+
+model3c2 <- arima(gdpts1, order=c(0,1,0))
+summary(model3c2)
+
+model3c3 <- arima(gdpts1, order=c(1,1,2), seasonal = c(0,1,2))
+summary(model3c3)
+
+```
+
+The best model still is the one generated from Auto-Arima -
+ARIMA(2,1,3)(1,0,2)[12].
+
+
+#### Question3(d)
+```{r}
+checkresiduals(model3b) # there is no correlation 
+```
+
+The preferred model is from auto-arima with order(2,1,3)(1,0,2)[12] as it had 
+the lowest RMSE, and the ACF graph still has some significant values showing 
+auto-correlation which can be optimized to have only white noise residual.Overall
+the model is still a decent fit and even the distribution is close to normal.
+
+#### Question3(e)
+```{r}
+options('scipen' = 100, 'digits' = 4)
+forecast3e <- forecast(model3b, h = 24)
+
+autoplot(gdpts1, series = 'Original') + xlab('Month') + ylab('Sales') +
+  autolayer(forecast3e, series = 'Forecast') +
+  scale_colour_manual(values=c('Original' = 'black', 'Forecast' = 'red'))+
+  ggtitle('ARIMA (2,1,3)(1,0,2)[12] Forecast')
+```
+
+#### Question3(f)
+```{r}
+model3f <- ets(gdpts1)
+ets3f <- summary(model3f)
+accuracy(model3f)
+
+aic3f <- model3f$aic
+RMSE3f <- ets3f[2]
+
+focast3f <- forecast(model3f, h=24)
+
+autoplot(gdpts1, series = 'Original') + xlab('Month') + ylab('Sales') +
+  autolayer(focast3f , series = 'Forecast') +
+  scale_colour_manual(values=c('Original' = 'black', 'Forecast' = 'red'))+
+  ggtitle('ETS Forecast')
+
+options(scipen=999)
+tab3f<- matrix(c( RMSE3b,  RMSE3f, aic3b, aic3f), ncol=2, byrow=T)
+colnames(tab3f) = c("Auto Arima","ETS")
+rownames(tab3f) <- c("RMSE", "AIC")
+tab3f
+```
+
+In this case the Auto-Arima model is a better fit than ETS, as the RMSE for 
+ARIMA model is 43.8 lower compared to ETS RMSE of 45.04. Also the forecast 
+from ETS model is constant which isn't realistic. 
